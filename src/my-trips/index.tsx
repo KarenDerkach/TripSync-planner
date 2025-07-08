@@ -4,18 +4,11 @@ import { collection, query, where, getDocs } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
 
 import UserTripCardItems from "@/components/allTrips/UserTripCardItems";
-
-interface Trip {
-  id: string;
-  userEmail: string;
-  userName: string;
-  userSelection: Record<string, unknown>;
-  tripData: Record<string, unknown>;
-}
+import type { AIresponse } from "@/lib/types";
 
 export default function MyTrips() {
   const navigate = useNavigate();
-  const [userTrips, setUserTrips] = useState<Trip[]>([]);
+  const [userTrips, setUserTrips] = useState<AIresponse[]>([]);
   console.log("MyTrips: ", userTrips);
   // Function to fetch user all trips from Firestore
   const GetUserTrips = useCallback(async () => {
@@ -48,10 +41,10 @@ export default function MyTrips() {
     }
 
     // Collect all trips first, then update state once
-    const trips: Trip[] = [];
+    const trips: AIresponse[] = [];
     querySnapshot.forEach((doc) => {
       console.log(`${doc.id} => ${doc.data()}`);
-      trips.push({ id: doc.id, ...doc.data() } as Trip);
+      trips.push({ id: doc.id, ...doc.data() } as AIresponse);
     });
 
     setUserTrips(trips);
