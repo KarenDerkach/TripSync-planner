@@ -14,7 +14,7 @@ const config = {
   },
 };
 
-export const GetPlacesPhotos = async (query: string) =>
+export const GetPlacesPhotos = async (query: string | object) =>
   axios.post(BASE_URL, query, config);
 
 export const PHOTO_REF_URL = `https://places.googleapis.com/v1/NAME/media?maxHeightPx=1000&maxWidthPx=1000&key=${

@@ -1,52 +1,14 @@
-import { GetPlacesPhotos, PHOTO_REF_URL } from "@/service/GlobalAPI";
-import React, { useEffect, useState } from "react";
+import type { AIresponse } from "@/lib/types";
+import { usePlacesPhotos } from "../../service/hooks/GooglePhotoService";
 import { Link } from "react-router-dom";
 
-function UserTripCardItems({
-  trip,
-}: {
-  trip: {
-    id: string;
-    userEmail: string;
-    userName: string;
-    userSelection: Record<string, unknown>;
-    tripData: Record<string, unknown>;
-  };
-}) {
+function UserTripCardItems({ trip }: { trip?: AIresponse | null }) {
   console.log("UserTripCardItems: ", trip);
-  const [photoUrl, setPhotoUrl] = useState(null);
-  const getPlacePhoto = async () => {
-    const data = {
-      textQuery: trip.userSelection.destination,
-    };
-    const result = await GetPlacesPhotos(data as any)
-      .then((resp) => {
-        console.log(
-          "Place Photos Response:",
-          resp.data.places[0].photos[3].name
-        );
-        const PhotoUrl = PHOTO_REF_URL.replace(
-          "NAME",
-          resp.data.places[0].photos[3].name
-        );
-        console.log("Photo URL:", PhotoUrl);
-        setPhotoUrl(PhotoUrl);
-      })
-      .catch((error) => {
-        console.error("Error fetching place photos:", error);
-        return [];
-      });
-    return result;
-  };
 
-  useEffect(() => {
-    if (trip.userSelection.destination) {
-      getPlacePhoto();
-    }
-  }, [trip.userSelection.destination]);
+  const photoUrl = usePlacesPhotos(trip?.userSelection?.destination);
 
   return (
-    <Link to={`/view-trip/${trip.id}`} className="block mb-3">
+    <Link to={`/view-trip/${trip?.id}`} className="block mb-3">
       <div className="hover:scale-105  transition-all cursor-pointer">
         <img
           src={photoUrl ? photoUrl : "/placeholder.png"}
@@ -55,11 +17,11 @@ function UserTripCardItems({
         />
         <div>
           <h2 className="font-bold text-lg">
-            {trip.userSelection.destination}
+            {String(trip?.userSelection?.destination)}
           </h2>
           <p className="text-sm text-gray-500">
-            {trip.userSelection.days} days trip with {trip.userSelection.budget}{" "}
-            budget
+            {String(trip?.userSelection?.days)} days trip with{" "}
+            {String(trip?.userSelection?.budget)} budget
           </p>
         </div>
       </div>

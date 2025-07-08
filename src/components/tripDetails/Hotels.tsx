@@ -1,10 +1,9 @@
+import type { AIresponse, Hotel } from "@/lib/types";
 import HotelCardItem from "./HotelCardItem";
 
-function Hotels({ trip }: { trip?: any }) {
-  const hotelList =
-    trip?.tripData?.travelItinerary?.hotels ||
-    trip?.tripData?.trip?.hotelOptions;
-  console.log("Hotel List:", hotelList);
+function Hotels({ trip }: { trip?: AIresponse | null }) {
+  const hotelList = trip?.tripData?.trip?.hotels || [];
+
   return (
     <div>
       <h2 className="font-bold text-xl mt-5 text-left">
@@ -13,7 +12,7 @@ function Hotels({ trip }: { trip?: any }) {
       <div>
         {hotelList?.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-5">
-            {hotelList?.map((hotel: any, index: number) => (
+            {hotelList?.map((hotel: Hotel, index: number) => (
               <div
                 key={index}
                 className="p-4 border rounded-lg hover:shadow-lg transition-shadow duration-300 text-left "

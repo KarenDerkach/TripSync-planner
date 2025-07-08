@@ -1,4 +1,3 @@
-import React, { useEffect, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -9,7 +8,13 @@ import {
 import { Button } from "../ui/button";
 import { FcGoogle } from "react-icons/fc";
 
-function GoogleModal({ openDialog, setOpenDialog, login }: any) {
+type GoogleModalProps = {
+  openDialog: boolean;
+  setOpenDialog: (open: boolean) => void;
+  login: () => void;
+};
+
+function GoogleModal({ openDialog, setOpenDialog, login }: GoogleModalProps) {
   return (
     <Dialog open={openDialog} onOpenChange={setOpenDialog}>
       <DialogContent>

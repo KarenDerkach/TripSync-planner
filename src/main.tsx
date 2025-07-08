@@ -1,14 +1,15 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import "./index.css";
 import App from "./App.tsx";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import CreateTrip from "./create-trip/index.tsx";
-import Header from "./components/custom/Header.tsx";
 import { Toaster } from "@/components/ui/sonner";
 import { GoogleOAuthProvider } from "@react-oauth/google";
+//Components
+import CreateTrip from "./create-trip/index.tsx";
+import Header from "./components/custom/Header.tsx";
 import ViewTrip from "./view-trip/[tripId].tsx";
 import MyTrips from "./my-trips/index.tsx";
+import "./index.css";
 
 const router = createBrowserRouter([
   {

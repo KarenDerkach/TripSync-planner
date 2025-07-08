@@ -12,17 +12,17 @@ const PlaceAutocomplete: React.FC<PlaceAutocompleteProps> = ({
   className = "",
   handleInputChange = () => {}, // Default to a no-op function
 }) => {
-  const [value, setValue] = useState(null);
+  const [value, setValue] = useState<string | null>(null);
 
   return (
     <div className={className}>
       <GooglePlacesAutocomplete
         apiKey={import.meta.env.VITE_GOOGLE_PLACE_API_KEY}
         selectProps={{
-          value,
-          onChange: (place: any) => {
-            setValue(place);
-            handleInputChange("destination", place?.label || "");
+          value: value ? { label: value } : null,
+          onChange: (place: { label: string } | null) => {
+            setValue(place?.label || null);
+            handleInputChange("destination", place?.label || "null");
           },
           placeholder,
           isClearable: true,

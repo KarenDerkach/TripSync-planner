@@ -1,22 +1,21 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router";
 import { Button } from "../ui/button";
-import PlaceAutocomplete from "./PlaceAutocomplete";
 import { Input } from "../ui/input";
+import { toast } from "sonner";
+import { useGoogleLogin } from "@react-oauth/google";
+import { db } from "@/service/firebaseConfig";
+import { doc, setDoc } from "firebase/firestore";
+import PlaceAutocomplete from "./PlaceAutocomplete";
+import GoogleModal from "./GoogleModal";
+import { PiSpinnerBold } from "react-icons/pi";
 import {
   SelectBudgetOptions,
   SelectTravelesList,
 } from "../../constants/options";
-import { toast } from "sonner";
+
 import { AI_PROMPT } from "../../constants/options";
 import { chatSession } from "@/service/AIModel";
-
-import { useGoogleLogin } from "@react-oauth/google";
-import { doc, setDoc } from "firebase/firestore";
-import { db } from "@/service/firebaseConfig";
-import { PiSpinnerBold } from "react-icons/pi";
-import GoogleModal from "./GoogleModal";
-
-import { useNavigate } from "react-router";
 
 const TripPlanner: React.FC = () => {
   const [formData, setFormData] = useState<{
@@ -33,7 +32,6 @@ const TripPlanner: React.FC = () => {
   const [loading, setLoading] = useState(false);
 
   const handleInputChange = (name: string, value: string) => {
-    // Handle input changes here, e.g., update formData state
     setFormData((prevData) => ({
       ...prevData,
       [name]: value,
@@ -63,6 +61,34 @@ const TripPlanner: React.FC = () => {
       return false;
     }
     return true;
+  };
+
+  // Function to fetch user profile from Google API
+  // This function will be called after the user successfully logs in with Google
+  // It retrieves the user's profile information and stores it in localStorage
+  const GetUserProfile = (tokenInfo: { access_token?: string }) => {
+    fetch(
+      `https://www.googleapis.com/oauth2/v3/userinfo?acess_token=${tokenInfo?.access_token}`,
+      {
+        headers: {
+          Authorization: `Bearer ${tokenInfo?.access_token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    )
+      .then((response) => response.json())
+      .then((data) => {
+        console.log("User profile data:", data);
+        // If everything is ok, generate trip
+        OnGenerateTrip();
+        // Store user data in localStorage
+        localStorage.setItem("user", JSON.stringify(data));
+        setOpenDialog(false);
+      })
+      .catch((error) => {
+        console.error("Error fetching user profile:", error);
+        toast.error("Error fetching user profile. Please try again.");
+      });
   };
 
   // Google OAuth login setup
@@ -96,9 +122,9 @@ const TripPlanner: React.FC = () => {
     await setDoc(doc(db, "AITrips", docId), {
       userSelection: formData,
       tripData: AIresponse,
-      userName: user.name, // Store the user's name
-      userEmail: user.email, // Store the user's email
-      id: docId, // Store the document ID
+      userName: user.name,
+      userEmail: user.email,
+      id: docId,
     });
     setLoading(false);
     navigate("/view-trip/" + docId); // Navigate to the view trip page with the document ID
@@ -143,7 +169,6 @@ const TripPlanner: React.FC = () => {
       const text = response.text();
       console.log("AI Response:", text);
       setLoading(false);
-      // Save AI trip data to Firestore
 
       // Parse JSON response and save it to Firestore
       if (!text) {
@@ -153,12 +178,11 @@ const TripPlanner: React.FC = () => {
       }
       try {
         // Clean the response text to extract only the JSON part
-        const cleanedText = extractJsonFromResponse(text);
+        // const cleanedText = extractJsonFromResponse(text);
+        const tripData = JSON.parse(text);
 
-        console.log("Cleaned AI Response:", cleanedText);
-
-        const tripData = JSON.parse(cleanedText);
         console.log("Parsed trip data:", tripData);
+        // Save AI trip data to Firestore
         SaveAITrip(tripData);
       } catch (parseError) {
         console.error("Error parsing JSON response:", parseError);
@@ -167,8 +191,6 @@ const TripPlanner: React.FC = () => {
           "Error parsing trip data. The AI response may be malformed. Please try again."
         );
 
-        // Try to save the raw response for debugging
-        console.log("Attempting to save raw response for debugging...");
         try {
           SaveAITrip({
             error: "JSON_PARSE_ERROR",
@@ -186,59 +208,6 @@ const TripPlanner: React.FC = () => {
       console.error("Error generating trip:", error);
       toast.error("Error generating trip. Please try again.");
     }
-  };
-
-  const GetUserProfile = (tokenInfo: { access_token?: string }) => {
-    fetch(
-      `https://www.googleapis.com/oauth2/v3/userinfo?acess_token=${tokenInfo?.access_token}`,
-      {
-        headers: {
-          Authorization: `Bearer ${tokenInfo?.access_token}`,
-          "Content-Type": "application/json",
-        },
-      }
-    )
-      .then((response) => response.json())
-      .then((data) => {
-        console.log("User profile data:", data);
-        // If everything is ok, generate trip
-        OnGenerateTrip();
-        // Store user data in localStorage
-        localStorage.setItem("user", JSON.stringify(data));
-        setOpenDialog(false);
-      })
-      .catch((error) => {
-        console.error("Error fetching user profile:", error);
-        toast.error("Error fetching user profile. Please try again.");
-      });
-  };
-
-  // Helper function to clean and extract JSON from AI response
-  const extractJsonFromResponse = (text: string): string => {
-    // Remove any markdown code blocks
-    let cleaned = text.replace(/```json\s*/g, "").replace(/```\s*/g, "");
-
-    // Remove any text before the first '{'
-    const firstBrace = cleaned.indexOf("{");
-    if (firstBrace !== -1) {
-      cleaned = cleaned.substring(firstBrace);
-    }
-
-    // Remove any text after the last '}'
-    const lastBrace = cleaned.lastIndexOf("}");
-    if (lastBrace !== -1) {
-      cleaned = cleaned.substring(0, lastBrace + 1);
-    }
-
-    // Fix common JSON issues
-    cleaned = cleaned
-      // Remove trailing commas before closing brackets/braces
-      .replace(/,(\s*[}\]])/g, "$1")
-      // Remove any control characters that might cause issues
-      .replace(/[\n\r\t]/g, " ")
-      .replace(/\s+/g, " ");
-
-    return cleaned;
   };
 
   useEffect(() => {
@@ -333,13 +302,6 @@ const TripPlanner: React.FC = () => {
           ) : (
             "Start Planning Trip"
           )}
-        </Button>
-
-        <Button
-          variant="outline"
-          className="w-full border-gray-300 text-gray-700 hover:bg-gray-50"
-        >
-          Save for Later
         </Button>
       </div>
 

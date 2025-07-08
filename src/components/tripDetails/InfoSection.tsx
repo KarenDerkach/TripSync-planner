@@ -1,43 +1,13 @@
-import React, { useEffect, useState } from "react";
 import { LuShare2 } from "react-icons/lu";
 import { Button } from "../ui/button";
-import { GetPlacesPhotos } from "../../service/GlobalAPI";
-import { PHOTO_REF_URL } from "../../service/GlobalAPI";
+import { usePlacesPhotos } from "../../service/hooks/GooglePhotoService";
+import type { AIresponse } from "@/lib/types";
 
-function InfoSection({ trip }: { trip?: any }) {
+function InfoSection({ trip }: { trip?: AIresponse | null }) {
   const { destination, days, travelers, budget } = trip?.userSelection || {};
 
-  const [photoUrl, setPhotoUrl] = useState(null);
+  const photoUrl = usePlacesPhotos(destination);
 
-  const getPlacePhoto = async () => {
-    const data = {
-      textQuery: destination,
-    };
-    const result = await GetPlacesPhotos(data as any)
-      .then((resp) => {
-        console.log(
-          "Place Photos Response:",
-          resp.data.places[0].photos[3].name
-        );
-        const PhotoUrl = PHOTO_REF_URL.replace(
-          "NAME",
-          resp.data.places[0].photos[3].name
-        );
-        console.log("Photo URL:", PhotoUrl);
-        setPhotoUrl(PhotoUrl);
-      })
-      .catch((error) => {
-        console.error("Error fetching place photos:", error);
-        return [];
-      });
-    return result;
-  };
-
-  useEffect(() => {
-    if (destination) {
-      getPlacePhoto();
-    }
-  }, [destination]);
   return (
     <div>
       <img
