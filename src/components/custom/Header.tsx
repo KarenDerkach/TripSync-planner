@@ -61,7 +61,7 @@ function Header() {
   return (
     <div className="p-2 shadow-sm flex justify-between items-center px-5">
       <a href="/" className="flex items-center">
-        <img src="/logo.svg" alt="TripSync Logo" className="h-8 w-auto" />
+        <img src="/airplane.gif" alt="TripSync Logo" className="h-10 w-auto" />
       </a>
 
       <div>
