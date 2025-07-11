@@ -99,7 +99,7 @@ function Header() {
                     className="h-[35px] w-[35px] rounded-full ml-2 ring-2 ring-white ring-opacity-50"
                   />
                 </PopoverTrigger>
-                <PopoverContent className="bg-white bg-opacity-95 backdrop-blur-md border-white border-opacity-30">
+                <PopoverContent className="bg-white bg-opacity-100 backdrop-blur-md border-white border-opacity-30">
                   <h2
                     onClick={() => {
                       googleLogout();
@@ -107,7 +107,7 @@ function Header() {
                       toast.success("Logged out successfully!");
                       window.location.reload();
                     }}
-                    className="cursor-pointer text-sm text-gray-700 hover:text-red-500"
+                    className="cursor-pointer  text-red-500 text-lg  hover:text-red-500"
                   >
                     Logout
                   </h2>
@@ -119,7 +119,7 @@ function Header() {
               onClick={() => {
                 setOpenDialog(true);
               }}
-              className="bg-blue-600 hover:bg-blue-700 text-white backdrop-blur-sm"
+              className="rounded-full bg-white bg-opacity-80 hover:bg-opacity-100 backdrop-blur-sm border-white border-opacity-30 text-lg"
             >
               Sign In
             </Button>
