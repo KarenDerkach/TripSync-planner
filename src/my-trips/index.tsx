@@ -56,10 +56,10 @@ export default function MyTrips() {
   }, [GetUserTrips]);
 
   return (
-    <div>
+    <div className="sm:px-10 md:px-32 lg:px-56 xl:px-10 px-5 pt-24 pb-10 m-10">
       <h1 className="font-bold text-3xl">My Trips</h1>
       <div>
-        <section className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-4">
+        <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mt-6">
           {userTrips.length > 0
             ? userTrips.map((trip, index) => (
                 <UserTripCardItems key={index} trip={trip} />
@@ -67,10 +67,12 @@ export default function MyTrips() {
             : [1, 2, 3, 4].map((_, index) => (
                 <div
                   key={index}
-                  className="h-[250px] w-full bg-slate-200 animate-pulse rounded-xl mb-4"
+                  className="h-80 w-full bg-slate-200 animate-pulse rounded-xl shadow-lg"
                 >
-                  <div className="h-full flex items-center justify-center">
-                    <p className="text-gray-500">Loading...</p>
+                  <div className="h-48 bg-slate-300 rounded-t-xl"></div>
+                  <div className="p-4 space-y-2">
+                    <div className="h-4 bg-slate-300 rounded w-3/4"></div>
+                    <div className="h-3 bg-slate-300 rounded w-1/2"></div>
                   </div>
                 </div>
               ))}

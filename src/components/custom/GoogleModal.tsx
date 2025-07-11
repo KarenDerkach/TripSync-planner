@@ -20,18 +20,25 @@ function GoogleModal({ openDialog, setOpenDialog, login }: GoogleModalProps) {
       <DialogContent>
         <DialogHeader>
           <DialogTitle>
-            <img
-              src="/logo.svg"
-              alt="TripSync Logo"
-              className="w-16 h-16 mb-4"
-            />
-            <h2 className="font-bold text-lg mt-7">Sign In with Google!</h2>
+            <div className="flex flex-col  justify-center items-center mb-5">
+              <img
+                src="/airplane.gif"
+                alt="TripSync Logo"
+                className="w-16 h-16"
+              />
+              <h2 className="font-bold text-xl mt-7 ml-7">
+                Sign In with Google!
+              </h2>
+            </div>
           </DialogTitle>
           <DialogDescription>
-            <p>Sign in to the App with Google authentication security</p>
+            <p className="text-lg text-gray-700 text-center">
+              Sign in to the App with Google authentication security
+            </p>
             <Button
+              variant="default"
               onClick={() => login()}
-              className="w-full mt-5 flex gap-4 items-center"
+              className="w-full mt-5 flex gap-4 items-center text-lg font-semibold"
             >
               {" "}
               <FcGoogle className="h-7 w-7" /> Sign In

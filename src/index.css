@@ -26,6 +26,12 @@
   --border: 214.3 31.8% 91.4%;
   --input: 214.3 31.8% 91.4%;
   --ring: 222.2 84% 4.9%;
+    --black: #26211f;
+  --light-brown:#aa7e50;
+  --dark-brown: #693c24;
+  --creame: #ccb393;
+  --dark-gray: #6c6256;
+  --orange:#d5a230;
 }
 
 .dark {
@@ -49,6 +55,8 @@
   --input: 217.2 32.6% 17.5%;
   --ring: 212.7 26.8% 83.9%;
 }
+
+
 
 body {
   margin: 0;
@@ -116,3 +124,15 @@ body {
   color: hsl(var(--primary-foreground)) !important;
 }
 
+.start-trip-button{
+  width: 100%;
+  background-color: var(--creame);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius);
+  font-weight: 600;
+  transition: background-color 0.2s ease-in-out;
+}
+.start-trip-button:hover {
+  background-color: var(--light-brown) !important;
+}

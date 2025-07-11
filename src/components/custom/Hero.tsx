@@ -1,31 +1,8 @@
-import { Button } from "../ui/button";
 import { Link } from "react-router-dom";
 import heroImg from "../../assets/hero.png"; // Adjust the path as necessary
 
 function Hero() {
   return (
-    // <div className="flex flex-row items-center justify-center min-h-screen bg-gray-100 p-8">
-    //   <section>
-    //     <img
-    //       src="/hero.png"
-    //       alt="TripSync Hero"
-    //       className="w-full h-full object-cover rounded-lg shadow-lg"
-    //     />
-    //   </section>
-    //   <section>
-    //     <h1 className="text-4xl font-bold text-center mt-10">
-    //       Welcome to TripSync Planner ✈️
-    //     </h1>
-    //     <p className="text-center mt-4 text-lg">
-    //       Plan less. Explore more.
-    //     </p>
-    //     <div className="flex justify-center mt-6">
-    //       <Link to="/create-trip">
-    //         <Button>Get Started!</Button>
-    //       </Link>
-    //     </div>
-    //   </section>
-    // </div>
     <div className="relative min-h-screen overflow-hidden">
       {/* Background image */}
       <div

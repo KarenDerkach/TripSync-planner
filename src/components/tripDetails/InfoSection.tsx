@@ -8,6 +8,22 @@ function InfoSection({ trip }: { trip?: AIresponse | null }) {
 
   const photoUrl = usePlacesPhotos(destination);
 
+  const handleShare = () => {
+    const shareText = `🌟 Check out my amazing trip plan! 🌟
+
+📍 Destination: ${destination}
+📅 Duration: ${days} days
+💰 Budget: ${budget}
+👥 Travelers: ${travelers}
+
+Planning a trip has never been easier with TripSync! ✈️
+
+${window.location.href}`;
+
+    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(shareText)}`;
+    window.open(whatsappUrl, "_blank");
+  };
+
   return (
     <div>
       <img
@@ -31,8 +47,13 @@ function InfoSection({ trip }: { trip?: AIresponse | null }) {
             </h2>
           </div>
         </div>
-        <Button>
+        <Button
+          onClick={handleShare}
+          className="flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white"
+          title="Share on WhatsApp"
+        >
           <LuShare2 />
+          Share
         </Button>
       </div>
     </div>

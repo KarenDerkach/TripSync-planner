@@ -38,7 +38,7 @@ function ViewTrip() {
     }
   }, [tripId, GetTripData]);
   return (
-    <div className="p-10 md:px-20 lg:px-44 xl:px-56">
+    <div className="p-10 md:px-20 lg:px-44 xl:px-56 mt-20 mx-auto">
       {/* Information Section */}
       <InfoSection trip={tripData} />
       {/* Recommended Hotels */}

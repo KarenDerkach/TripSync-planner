@@ -247,7 +247,7 @@ const TripPlanner: React.FC = () => {
           {" "}
           What is your Budget?{" "}
         </label>
-        <div className="grid grid-cols-3 gap-4 mt-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-5">
           {SelectBudgetOptions.map((item, index) => (
             <div
               key={index}
@@ -271,7 +271,7 @@ const TripPlanner: React.FC = () => {
           {" "}
           Who do you plan on traveling with on your next adventure?{" "}
         </label>
-        <div className="grid grid-cols-2 gap-4 mt-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-5">
           {SelectTravelesList.map((item, index) => (
             <div
               key={index}
@@ -294,7 +294,7 @@ const TripPlanner: React.FC = () => {
       <div className="space-y-3">
         <Button
           onClick={OnGenerateTrip}
-          className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+          className="start-trip-button"
           disabled={loading}
         >
           {loading ? (

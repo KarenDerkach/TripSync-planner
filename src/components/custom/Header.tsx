@@ -59,66 +59,79 @@ function Header() {
   }, [userData]);
 
   return (
-    <div className="p-2 shadow-sm flex justify-between items-center px-5">
-      <a href="/" className="flex items-center">
-        <img src="/airplane.gif" alt="TripSync Logo" className="h-10 w-auto" />
-      </a>
+    <div className="fixed top-0 left-0 right-0 z-50 bg-white bg-opacity-50 backdrop-blur-md shadow-lg border-b border-white border-opacity-20">
+      <div className="p-4 flex justify-between items-center px-5 max-w-7xl mx-auto">
+        <a href="/" className="flex items-center">
+          <img
+            src="/trans_bg.png"
+            alt="TripSync Logo"
+            className="h-14 w-auto"
+          />
+        </a>
 
-      <div>
-        {userData ? (
-          <div className="flex items-center gap-5">
-            <a href="/create-trip">
-              <Button variant={"outline"} className="rounded-full">
-                Create Trip
-              </Button>
-            </a>
-            <a href="/my-trips">
-              <Button variant={"outline"} className="rounded-full">
-                My Trip
-              </Button>
-            </a>
-
-            <Popover>
-              <PopoverTrigger>
-                <img
-                  src={
-                    userData?.picture ? userData.picture : "/placeholder.png"
-                  }
-                  alt={userData?.email}
-                  className="h-[35px] w-[35px] rounded-full ml-2"
-                />
-              </PopoverTrigger>
-              <PopoverContent>
-                <h2
-                  onClick={() => {
-                    googleLogout();
-                    localStorage.removeItem("user");
-                    toast.success("Logged out successfully!");
-                    window.location.reload();
-                  }}
-                  className="cursor-pointer text-sm text-gray-700 hover:text-red-500"
+        <div>
+          {userData ? (
+            <div className="flex items-center gap-5">
+              <a href="/create-trip">
+                <Button
+                  variant={"outline"}
+                  className="rounded-full bg-white bg-opacity-80 hover:bg-opacity-100 backdrop-blur-sm border-white border-opacity-30"
                 >
-                  Logout
-                </h2>
-              </PopoverContent>
-            </Popover>
-          </div>
-        ) : (
-          <Button
-            onClick={() => {
-              setOpenDialog(true);
-            }}
-          >
-            Sign In
-          </Button>
-        )}
+                  Create Trip
+                </Button>
+              </a>
+              <a href="/my-trips">
+                <Button
+                  variant={"outline"}
+                  className="rounded-full bg-white bg-opacity-80 hover:bg-opacity-100 backdrop-blur-sm border-white border-opacity-30"
+                >
+                  My Trip
+                </Button>
+              </a>
+
+              <Popover>
+                <PopoverTrigger>
+                  <img
+                    src={
+                      userData?.picture ? userData.picture : "/placeholder.png"
+                    }
+                    alt={userData?.email}
+                    className="h-[35px] w-[35px] rounded-full ml-2 ring-2 ring-white ring-opacity-50"
+                  />
+                </PopoverTrigger>
+                <PopoverContent className="bg-white bg-opacity-95 backdrop-blur-md border-white border-opacity-30">
+                  <h2
+                    onClick={() => {
+                      googleLogout();
+                      localStorage.removeItem("user");
+                      toast.success("Logged out successfully!");
+                      window.location.reload();
+                    }}
+                    className="cursor-pointer text-sm text-gray-700 hover:text-red-500"
+                  >
+                    Logout
+                  </h2>
+                </PopoverContent>
+              </Popover>
+            </div>
+          ) : (
+            <Button
+              onClick={() => {
+                setOpenDialog(true);
+              }}
+              className="bg-blue-600 hover:bg-blue-700 text-white backdrop-blur-sm"
+            >
+              Sign In
+            </Button>
+          )}
+        </div>
+        {/* Google Login Dialog */}
+        <GoogleModal
+          openDialog={openDialog}
+          setOpenDialog={setOpenDialog}
+          login={login}
+        />
       </div>
-      {/* Google Login Dialog */}
-      <GoogleModal
-        openDialog={openDialog}
-        setOpenDialog={setOpenDialog}
-        login={login}
-      />
     </div>
   );
 }
