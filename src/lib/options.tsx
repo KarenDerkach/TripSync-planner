@@ -50,7 +50,7 @@ export const SelectBudgetOptions = [
   },
 ];
 
-export const AI_PROMPT = `You are a travel assistant. Generate a complete travel itinerary in VALID JSON format only, with a fixed structure as described below. 
+export const AI_PROMPT = `Generate ONLY a valid JSON object for a travel itinerary. No explanations, no markdown formatting, no code blocks, just pure JSON.
 
 Input parameters:
 - Destination: {{destination}}
@@ -58,13 +58,18 @@ Input parameters:
 - Budget: {{budget}} 
 - Number of travelers: {{travelers}}
 
-🛑 Output rules:
-- The response must include exactly {{days}} entries in the "itinerary" array — one per day.
-- The hotel recommendations must be suitable for the provided budget, duration, and number of travelers.
-- Avoid luxury hotels if the budget is low; suggest mid-range or budget hotels when appropriate.
-- Price per night should be realistic and aligned with destination and budget.
-- All prices should be in EUR.
-- Return ONLY the following JSON structure — DO NOT change property names or structure:
+CRITICAL REQUIREMENTS:
+- Return ONLY valid JSON - no other text before or after
+- Include exactly {{days}} entries in the "itinerary" array
+- All string values must be properly escaped
+- No trailing commas
+- All URLs must be valid strings
+- Numbers should be numeric values, not strings
+- Give almost 3 Hotel recommendations suitable for budget and travelers
+- Give almost 3 activity recommendations per day
+- Prices in EUR format
+
+EXACT JSON STRUCTURE TO FOLLOW:
 
 {
   "trip": {
@@ -124,10 +129,11 @@ Input parameters:
   }
 }
 
-🔁 Repeat this structure inside the "itinerary" array for EACH DAY of the trip — do not omit any day.
+EXAMPLES OF PROPER JSON VALUES:
+- String: "Hotel Barcelona Center"
+- Number: 4.5 (not "4.5")
+- Price: "€120 per night"
+- URL: "https://example.com/image.jpg"
+- Coordinates: {"lat": 41.3851, "lng": 2.1734}
 
-📝 Notes:
-- Use realistic and popular options for hotels and activities.
-- Include valid image URLs and Google Maps links.
-- Set "null" for ticketPrice if unknown.
-- Return ONLY the JSON object, no extra explanation or markdown.`;
+Remember: Return ONLY the JSON object above, nothing else.`;

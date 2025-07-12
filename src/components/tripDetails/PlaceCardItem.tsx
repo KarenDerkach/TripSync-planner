@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { usePlacesPhotos } from "../../service/hooks/GooglePhotoService";
+import { usePlacesPhotos } from "../../hooks/useGooglePhotoService";
 import type { Activity } from "@/lib/types";
 
 function PlaceCardItem({ activities }: { activities?: Activity }) {

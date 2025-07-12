@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { usePlacesPhotos } from "../../service/hooks/GooglePhotoService";
+import { usePlacesPhotos } from "../../hooks/useGooglePhotoService";
 import type { Hotel } from "@/lib/types";
 
 function HotelCardItem({ hotel }: { hotel: Hotel }) {

@@ -1,5 +1,5 @@
 import type { AIresponse } from "@/lib/types";
-import { usePlacesPhotos } from "../../service/hooks/GooglePhotoService";
+import { usePlacesPhotos } from "../../hooks/useGooglePhotoService";
 import { Link } from "react-router-dom";
 
 function UserTripCardItems({ trip }: { trip?: AIresponse | null }) {

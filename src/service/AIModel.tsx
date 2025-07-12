@@ -12,11 +12,13 @@ export const chatSession = () => {
   const model = genAI.getGenerativeModel({
     model: "gemini-1.5-flash",
     generationConfig: {
-      temperature: 0.9,
-      topP: 1,
+      temperature: 0.2, // Lower temperature for more consistent JSON output
+      topP: 0.8,
       maxOutputTokens: 8192,
       responseMimeType: "application/json",
     },
+    systemInstruction:
+      "You are a JSON-only API. Return valid JSON with no additional text, formatting, or explanations.",
   });
 
   return model;

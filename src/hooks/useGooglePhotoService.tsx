@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import {
   PHOTO_REF_URL,
   GetPlacesPhotos as fetchPlacesPhotos,
-} from "../GlobalAPI";
+} from "../service/GlobalAPI";
 
 type PhotoData = {
   textQuery: string;

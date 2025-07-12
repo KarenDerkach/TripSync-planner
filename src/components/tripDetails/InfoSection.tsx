@@ -1,6 +1,6 @@
 import { LuShare2 } from "react-icons/lu";
 import { Button } from "../ui/button";
-import { usePlacesPhotos } from "../../service/hooks/GooglePhotoService";
+import { usePlacesPhotos } from "../../hooks/useGooglePhotoService";
 import type { AIresponse } from "@/lib/types";
 
 function InfoSection({ trip }: { trip?: AIresponse | null }) {

@@ -3,18 +3,18 @@ import { useNavigate } from "react-router";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { toast } from "sonner";
-import { useGoogleLogin } from "@react-oauth/google";
+
 import { db } from "@/service/firebaseConfig";
 import { doc, setDoc } from "firebase/firestore";
 import PlaceAutocomplete from "./PlaceAutocomplete";
-import GoogleModal from "./GoogleModal";
+
 import { PiSpinnerBold } from "react-icons/pi";
+
 import {
+  AI_PROMPT,
   SelectBudgetOptions,
   SelectTravelesList,
-} from "../../constants/options";
-
-import { AI_PROMPT } from "../../constants/options";
+} from "../../lib/options";
 import { chatSession } from "@/service/AIModel";
 
 const TripPlanner: React.FC = () => {
@@ -26,8 +26,6 @@ const TripPlanner: React.FC = () => {
   }>({});
 
   const navigate = useNavigate();
-
-  const [openDialog, setOpenDialog] = useState(false);
 
   const [loading, setLoading] = useState(false);
 
@@ -63,49 +61,93 @@ const TripPlanner: React.FC = () => {
     return true;
   };
 
-  // Function to fetch user profile from Google API
-  // This function will be called after the user successfully logs in with Google
-  // It retrieves the user's profile information and stores it in localStorage
-  const GetUserProfile = (tokenInfo: { access_token?: string }) => {
-    fetch(
-      `https://www.googleapis.com/oauth2/v3/userinfo?acess_token=${tokenInfo?.access_token}`,
-      {
-        headers: {
-          Authorization: `Bearer ${tokenInfo?.access_token}`,
-          "Content-Type": "application/json",
-        },
-      }
-    )
-      .then((response) => response.json())
-      .then((data) => {
-        console.log("User profile data:", data);
-        // If everything is ok, generate trip
-        OnGenerateTrip();
-        // Store user data in localStorage
-        localStorage.setItem("user", JSON.stringify(data));
-        setOpenDialog(false);
-      })
-      .catch((error) => {
-        console.error("Error fetching user profile:", error);
-        toast.error("Error fetching user profile. Please try again.");
-      });
+  // Function to extract and clean JSON from AI response
+  // Validate that the parsed JSON has the expected structure
+  const validateTripData = (data: unknown): boolean => {
+    if (!data || typeof data !== "object") return false;
+
+    const tripData = data as Record<string, unknown>;
+    if (!tripData.trip || typeof tripData.trip !== "object") return false;
+
+    const trip = tripData.trip as Record<string, unknown>;
+
+    // Check required fields
+    if (
+      !trip.destination ||
+      !trip.duration ||
+      !trip.budget ||
+      !trip.travelers
+    ) {
+      return false;
+    }
+
+    // Check that hotels is an array
+    if (!Array.isArray(trip.hotels)) return false;
+
+    // Check that itinerary is an array
+    if (!Array.isArray(trip.itinerary)) return false;
+
+    // Check that we have the right number of days
+    const expectedDays = parseInt(formData.days || "1");
+    if (trip.itinerary.length !== expectedDays) {
+      console.warn(
+        `Expected ${expectedDays} days, got ${trip.itinerary.length} days in itinerary`
+      );
+    }
+
+    return true;
   };
 
-  // Google OAuth login setup
-  // This will handle the Google login process
-  // and retrieve the user's profile information
-  const login = useGoogleLogin({
-    onSuccess: (tokenResponse) => {
-      console.log("Login successful:", tokenResponse);
-      GetUserProfile(tokenResponse);
+  const extractAndCleanJSON = (text: string): Record<string, unknown> => {
+    try {
+      // Try parsing directly first
+      return JSON.parse(text);
+    } catch (error) {
+      console.log("Direct JSON parse failed, attempting to clean response...");
 
-      toast.success("Logged in successfully!");
-    },
-    onError: (error) => {
-      console.error("Login failed:", error);
-      toast.error("Login failed. Please try again.");
-    },
-  });
+      // Remove markdown code blocks if present
+      let cleanedText = text.replace(/```json\s*/g, "").replace(/```\s*/g, "");
+
+      // Find JSON object boundaries
+      const jsonStart = cleanedText.indexOf("{");
+      const jsonEnd = cleanedText.lastIndexOf("}") + 1;
+
+      if (jsonStart !== -1 && jsonEnd > jsonStart) {
+        cleanedText = cleanedText.substring(jsonStart, jsonEnd);
+
+        try {
+          return JSON.parse(cleanedText);
+        } catch (innerError) {
+          console.log(
+            "Cleaned JSON parse failed, attempting fixes...",
+            innerError
+          );
+
+          // Common fixes for malformed JSON
+          cleanedText = cleanedText
+            // Fix trailing commas
+            .replace(/,(\s*[}\]])/g, "$1")
+            // Fix unescaped quotes in strings
+            .replace(/([^\\])"/g, '$1\\"')
+            // Fix missing quotes around property names
+            .replace(/([{,]\s*)([a-zA-Z_][a-zA-Z0-9_]*)\s*:/g, '$1"$2":')
+            // Fix single quotes to double quotes
+            .replace(/'/g, '"');
+
+          try {
+            return JSON.parse(cleanedText);
+          } catch (finalError) {
+            console.error("Final parse attempt failed:", finalError);
+            throw new Error(
+              `Unable to parse JSON after cleaning attempts. Original error: ${error}`
+            );
+          }
+        }
+      } else {
+        throw new Error("No valid JSON object found in response");
+      }
+    }
+  };
 
   // Function to save AI-generated trip data to Firestore
   // This function will be called after the AI response is received
@@ -141,73 +183,103 @@ const TripPlanner: React.FC = () => {
   const OnGenerateTrip = async () => {
     // Logic to generate trip based on formData
 
-    //Validate if user is logged in
-    const user = localStorage.getItem("user");
-    if (!user) {
-      setOpenDialog(true);
-      return;
-    }
     if (!validation()) {
       return;
     }
 
-    const FINAL_AI_PROMPT = AI_PROMPT.replace(
-      "{{destination}}",
-      formData?.destination || ""
-    )
-      .replace("{{days}}", formData?.days || "")
-      .replace("{{budget}}", formData?.budget || "")
-      .replace("{{travelers}}", formData?.travelers || "");
+    const maxRetries = 3;
+    let currentAttempt = 0;
 
-    console.log("Final AI Prompt:", FINAL_AI_PROMPT);
-    setLoading(true);
-    // Call the AI model to generate the trip
-    try {
-      const model = chatSession();
-      const result = await model.generateContent(FINAL_AI_PROMPT);
-      const response = await result.response;
-      const text = response.text();
-      console.log("AI Response:", text);
-      setLoading(false);
+    const generateTripWithRetry = async (): Promise<void> => {
+      currentAttempt++;
+      setLoading(true);
 
-      // Parse JSON response and save it to Firestore
-      if (!text) {
-        console.error("Empty response from AI model.");
-        toast.error("No trip data generated. Please try again.");
-        return;
-      }
+      const FINAL_AI_PROMPT = AI_PROMPT.replace(
+        "{{destination}}",
+        formData?.destination || ""
+      )
+        .replace(/{{days}}/g, formData?.days || "") // Replace all occurrences
+        .replace("{{budget}}", formData?.budget || "")
+        .replace("{{travelers}}", formData?.travelers || "");
+
+      console.log(
+        `Final AI Prompt (attempt ${currentAttempt}):`,
+        FINAL_AI_PROMPT
+      );
+
       try {
-        // Clean the response text to extract only the JSON part
-        // const cleanedText = extractJsonFromResponse(text);
-        const tripData = JSON.parse(text);
+        const model = chatSession();
+        const result = await model.generateContent(FINAL_AI_PROMPT);
+        const response = await result.response;
+        const text = response.text();
+        console.log(`AI Response (attempt ${currentAttempt}):`, text);
 
-        console.log("Parsed trip data:", tripData);
+        // Parse JSON response and save it to Firestore
+        if (!text) {
+          throw new Error("Empty response from AI model");
+        }
+
+        console.log("Raw AI Response:", text);
+
+        // Use the improved JSON extraction function
+        const tripData = extractAndCleanJSON(text);
+
+        console.log("Successfully parsed trip data:", tripData);
+
+        // Validate that we have a proper trip structure
+        if (!validateTripData(tripData)) {
+          throw new Error(
+            "Invalid trip data structure - missing required fields or incorrect format"
+          );
+        }
+
+        console.log("Trip data validation passed");
+        setLoading(false);
+
         // Save AI trip data to Firestore
         SaveAITrip(tripData);
       } catch (parseError) {
-        console.error("Error parsing JSON response:", parseError);
-        console.error("Raw AI Response:", text);
-        toast.error(
-          "Error parsing trip data. The AI response may be malformed. Please try again."
+        console.error(
+          `Trip generation attempt ${currentAttempt} failed:`,
+          parseError
         );
+        setLoading(false);
 
-        try {
-          SaveAITrip({
-            error: "JSON_PARSE_ERROR",
-            rawResponse: text,
-            parseError:
-              parseError instanceof Error
-                ? parseError.message
-                : String(parseError),
-          });
-        } catch (saveError) {
-          console.error("Failed to save debug data:", saveError);
+        if (currentAttempt < maxRetries) {
+          console.log(`Retrying... (${currentAttempt}/${maxRetries})`);
+          toast.error(
+            `Generation failed, retrying... (${currentAttempt}/${maxRetries})`
+          );
+          // Wait a moment before retrying
+          await new Promise((resolve) => setTimeout(resolve, 2000));
+          return generateTripWithRetry();
+        } else {
+          console.error("Max retries reached. Trip generation failed.");
+          const errorMessage =
+            parseError instanceof Error
+              ? parseError.message
+              : String(parseError);
+          toast.error(
+            `Failed to generate trip after ${maxRetries} attempts: ${errorMessage}`
+          );
+
+          // Save debug data for analysis
+          try {
+            await SaveAITrip({
+              error: "JSON_PARSE_ERROR_AFTER_RETRIES",
+              attempts: maxRetries,
+              lastError: errorMessage,
+              timestamp: new Date().toISOString(),
+              formData: formData,
+            });
+          } catch (saveError) {
+            console.error("Failed to save debug data:", saveError);
+          }
         }
       }
-    } catch (error) {
-      console.error("Error generating trip:", error);
-      toast.error("Error generating trip. Please try again.");
-    }
+    };
+
+    await generateTripWithRetry();
   };
 
   useEffect(() => {
@@ -304,13 +376,6 @@ const TripPlanner: React.FC = () => {
           )}
         </Button>
       </div>
-
-      {/* Google Login Dialog */}
-      <GoogleModal
-        openDialog={openDialog}
-        setOpenDialog={setOpenDialog}
-        login={login}
-      />
     </div>
   );
 };

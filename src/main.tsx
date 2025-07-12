@@ -1,14 +1,17 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import App from "./App.tsx";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { Toaster } from "@/components/ui/sonner";
 import { GoogleOAuthProvider } from "@react-oauth/google";
+import { AuthProvider } from "./context/AuthProvider.tsx";
 //Components
+import ProtectedRoute from "./components/common/ProtectedRoute.tsx";
 import CreateTrip from "./create-trip/index.tsx";
-import Header from "./components/custom/Header.tsx";
+import Header from "./components/common/Header.tsx";
 import ViewTrip from "./view-trip/[tripId].tsx";
 import MyTrips from "./my-trips/index.tsx";
+import App from "./App.tsx";
+
 import "./index.css";
 
 const router = createBrowserRouter([
@@ -18,7 +21,11 @@ const router = createBrowserRouter([
   },
   {
     path: "/create-trip",
-    element: <CreateTrip />,
+    element: (
+      <ProtectedRoute>
+        <CreateTrip />
+      </ProtectedRoute>
+    ),
   },
   {
     path: "/view-trip/:tripId",
@@ -26,16 +33,22 @@ const router = createBrowserRouter([
   },
   {
     path: "/my-trips",
-    element: <MyTrips />,
+    element: (
+      <ProtectedRoute>
+        <MyTrips />
+      </ProtectedRoute>
+    ),
   },
 ]);
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_AUTH_CLIENT_ID}>
-      <Header />
-      <Toaster />
-      <RouterProvider router={router} />
+      <AuthProvider>
+        <Header />
+        <Toaster />
+        <RouterProvider router={router} />
+      </AuthProvider>
     </GoogleOAuthProvider>
   </React.StrictMode>
 );
